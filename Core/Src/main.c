@@ -45,6 +45,8 @@ ADC_HandleTypeDef hadc;
 
 LCD_HandleTypeDef hlcd;
 
+TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -54,6 +56,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC_Init(void);
 static void MX_LCD_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TS_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -94,6 +97,7 @@ int main(void)
   //MX_GPIO_Init();
   //MX_ADC_Init();
   //MX_LCD_Init();
+  MX_TIM2_Init();
   //MX_TS_Init();
   /* USER CODE BEGIN 2 */
 
@@ -133,13 +137,11 @@ int main(void)
 
   while (1)
   {
-    /* USER CODE END WHILE */
-
 	  //GPIO_PinState     HAL_GPIO_ReadPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-
 	  GPIO_PinState buttonState = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
 
 	  if(buttonState == GPIO_PIN_SET){
+
 		  HAL_Delay(10);
 
 		  uint32_t startTimeStamp = HAL_GetTick();
@@ -149,9 +151,8 @@ int main(void)
 		  uint32_t endTimeStamp = HAL_GetTick();
 
 		  HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-
 	  }
-
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
@@ -298,6 +299,54 @@ static void MX_LCD_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0xFFFF;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 0;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TIMING;
+  sConfigOC.Pulse = 488;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief TS Initialization Function
   * @param None
   * @retval None
@@ -346,10 +395,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(IDD_CNT_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
-  /*GPIO_InitStruct.Pin = B1_Pin;
+  GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);*/
+  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD4_Pin LD3_Pin */
   GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin;
